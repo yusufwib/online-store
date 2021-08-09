@@ -20,7 +20,6 @@ class CreateProductsTable extends Migration
             $table->integer('weight');
             $table->integer('active');
             $table->integer('id_brand');
-            $table->integer('id_city');
             $table->timestamps();
         });
     }

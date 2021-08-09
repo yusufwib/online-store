@@ -36,5 +36,6 @@ class DataSeeder extends Seeder
         Role::insert([
             'name' => 'Owner',
         ]);
+
     }
 }
