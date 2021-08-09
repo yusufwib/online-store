@@ -46,5 +46,11 @@ Route::group([
         Route::post('/get', [TransactionController::class, 'getCart']); 
     });
 
+    Route::group([
+        'prefix' => 'checkout'    
+    ], function ($router) {
+        Route::post('/add', [TransactionController::class, 'addToCheckout']); 
+    });
+
     Route::get('/treasure-hunt', [TreasureHuntController::class, 'treasureHunt']);
 });

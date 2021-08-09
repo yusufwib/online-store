@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DetailCart;
+use App\Models\Transaction;
 use App\Models\Cart;
 use App\Helper\ResponseHelper as JsonHelper;
 use Carbon, Validator;
@@ -62,6 +63,48 @@ class TransactionController extends Controller
             }
         }
 
+        return $res->responsePost(true, 201, null);
+    }
+
+    public function addToCheckout (Request $request) {
+        $res = new JsonHelper;
+
+        $validator = Validator::make($request->all(), [
+            'id_cart' => 'required',
+        ]);
+
+        if($validator->fails()){
+            return $res->responseGet(false, 400, '', $validator->errors());
+        }
+
+        $orderCheck = Transaction::where('id_cart', $request->input('id_cart'))->where('id_user', auth()->user()->id)->get();
+        $orderToday = Transaction::whereDate('created_at', Carbon\Carbon::today())->get();
+        $numOfTodaY = (int)count($orderToday) + 1;
+        if (count($orderCheck) > 0) {
+            Transaction::where('id_cart', $request->input('id_cart'))->where('id_user', auth()->user()->id)->delete();
+            $order = Transaction::create(array_merge(
+                $validator->validated(),
+                [
+                    'inv' => 'INV' . Carbon\Carbon::now()->format('YmdHis') . '' . $numOfTodaY,
+                    'id_cart' => $request->input('id_cart'),
+                    'id_user' => auth()->user()->id,
+                    'created_at' => Carbon\Carbon::now(),
+                    'updated_at' => Carbon\Carbon::now()
+                ]
+            ));
+            return $res->responsePost(true, 201, null);
+        } else {
+            $order = Transaction::create(array_merge(
+                $validator->validated(),
+                [
+                    'inv' => 'INV' . Carbon\Carbon::now()->format('Ymd') . '' . $numOfTodaY,
+                    'id_cart' => $request->input('id_cart'),
+                    'id_user' => auth()->user()->id,
+                    'created_at' => Carbon\Carbon::now(),
+                    'updated_at' => Carbon\Carbon::now()
+                ]
+            ));
+        }
         return $res->responsePost(true, 201, null);
     }
 }
