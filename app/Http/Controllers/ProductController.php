@@ -8,7 +8,7 @@ use App\Models\AssetProduct;
 use App\Models\DetailProduct;
 use App\Models\CategoryProduct;
 use App\Helper\ResponseHelper as JsonHelper;
-use Validator, Carbon;
+use Validator, Carbon, Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 
@@ -16,6 +16,7 @@ class ProductController extends Controller
 {
     public function createProduct (Request $request) {
         $res = new JsonHelper;
+        Log::debug('function: createProduct');
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
@@ -25,6 +26,7 @@ class ProductController extends Controller
         ]);
 
         if($validator->fails()){
+            Log::error('function: createProduct [validator fail]');
             return $res->responseGet(false, 400, '', $validator->errors());
         }
         $product = Product::create(array_merge(
@@ -53,7 +55,7 @@ class ProductController extends Controller
 
             if ($request->hasfile('images')) {
                 foreach($request->file('images') as $i) {
-                    
+
                     $name = 'product-' . uniqid() . $res->generateRandomString(30) . '.'.$i->getClientOriginalExtension();
                     Storage::disk('public')->put($name,File::get($i));
                     AssetProduct::insert([
@@ -73,15 +75,14 @@ class ProductController extends Controller
 
     public function getProduct (Request $request) {
         $res = new JsonHelper;
+        Log::debug('function: getProduct');
 
         $search_query = $request->input('search_query');
-
         $data = Product::where('products.name', 'like', '%' . $search_query . '%')->get();
 
         foreach ($data as $k => $v) {
             $assets = AssetProduct::where('id_product', $v->id)->get();
             $data[$k]->assets = $assets;
-
             $detailVarian = DetailProduct::where('id_product', $v->id)->get();
             $data[$k]->detail_varian = $detailVarian;
         }

@@ -7,17 +7,18 @@ use App\Models\DetailCart;
 use App\Models\Transaction;
 use App\Models\Cart;
 use App\Helper\ResponseHelper as JsonHelper;
-use Carbon, Validator;
+use Carbon, Validator, Log;
 
 class TransactionController extends Controller
 {
     public function addToCart (Request $request) {
         $res = new JsonHelper;
-
+        Log::debug('function: addToCart');
         $validator = Validator::make($request->all(), [
             'qty' => 'required',
         ]);
         if($validator->fails()){
+            Log::error('function: addToCart [validator fail]');
             return $res->responseGet(false, 400, '', $validator->errors());
         }
         $cartCheck = Cart::where('active', 1)->where('id_user', auth()->user()->id)->get();
@@ -68,12 +69,13 @@ class TransactionController extends Controller
 
     public function addToCheckout (Request $request) {
         $res = new JsonHelper;
-
+        Log::debug('function: addToCheckout');
         $validator = Validator::make($request->all(), [
             'id_cart' => 'required',
         ]);
 
         if($validator->fails()){
+            Log::error('function: addToCheckout [validator fail]');
             return $res->responseGet(false, 400, '', $validator->errors());
         }
 

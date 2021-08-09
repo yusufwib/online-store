@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Validator;
+use Validator, Log;
 use App\Helper\ResponseHelper as JsonHelper;
 
 class AuthController extends Controller
@@ -26,12 +26,14 @@ class AuthController extends Controller
      */
     public function login(Request $request){
         $res = new JsonHelper;
+        Log::debug('function: login');
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
         if ($validator->fails()) {
+            Log::error('function: login [validator fail]');
             return $res->responseGet(false, 400, '', $validator->errors());
         }
 
@@ -57,8 +59,10 @@ class AuthController extends Controller
             'password' => 'required|string|confirmed|min:6',
             'role_id' => 'required',
         ]);
+        Log::debug('function: register');
 
         if($validator->fails()){
+            Log::error('function: addToCart [validator fail]');
             return $res->responseGet(false, 400, '', $validator->errors());
         }
 
@@ -81,7 +85,7 @@ class AuthController extends Controller
      */
     public function logout() {
         $res = new JsonHelper;
-
+        Log::debug('function: logout');
         auth()->logout();
         return $res->responseGet(true, 200, '', 'User successfully signed out');
     }
@@ -93,7 +97,7 @@ class AuthController extends Controller
      */
     public function refresh() {
         $res = new JsonHelper;
-
+        Log::debug('function: refresh');
         return $res->responseGet(true, 200, $this->createNewToken(auth()->refresh()), '');
     }
 
@@ -104,7 +108,7 @@ class AuthController extends Controller
      */
     public function userProfile() {
         $res = new JsonHelper;
-
+        Log::debug('function: userProile');
         return $res->responseGet(true, 200, auth()->user(), '');
     }
 
@@ -116,6 +120,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     protected function createNewToken($token){
+        Log::debug('function: createNewToken');
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
