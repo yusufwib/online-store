@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helper\ResponseHelper as JsonHelper;
 
 class TreasureHuntController extends Controller
 {
     
     public function treasureHunt () {
-        $count = 0;
+        $res = new JsonHelper;
+
         $coordinate = [];
         $clearWay = 0;
         $arr = [
@@ -37,13 +39,19 @@ class TreasureHuntController extends Controller
                 if ($v2 == '.') {
                     $clearWay += 1;
                     $arrTemp = [
-                        $coordinate[0] => $k1,
-                        $coordinate[1] => $k2
+                        'x' => $k1,
+                        'y' => $k2
                     ];
                     array_push($coordinate, $arrTemp);
                 }
             }
         }
-        return $coordinate;
+        // return $;
+        $arrResponse = [
+            'total' => $clearWay,
+            'possible_coordinate' => $coordinate
+        ];
+        return $res->responseGet(true, 200, $arrResponse, '');
+
     }
 }

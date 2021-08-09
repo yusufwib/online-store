@@ -38,8 +38,9 @@ class AuthController extends Controller
         if (! $token = auth()->attempt($validator->validated())) {
             return $res->responseGet(false, 401, '', 'Unatorizhed');
         }
-
-        return $res->responseGet(true, 200, $this->createNewToken($token), '');
+        return $res->responseGet(true, 200, [
+            'token' => $token
+        ], 'Login success.');
     }
 
     /**
@@ -54,6 +55,7 @@ class AuthController extends Controller
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|confirmed|min:6',
+            'role_id' => 'required',
         ]);
 
         if($validator->fails()){
@@ -62,7 +64,10 @@ class AuthController extends Controller
 
         $user = User::create(array_merge(
                     $validator->validated(),
-                    ['password' => bcrypt($request->password)]
+                    [
+                        'role_id' => $request->role_id,
+                        'password' => bcrypt($request->password),
+                    ]
                 ));
 
         return $res->responsePost(true, 201, $user, '');
@@ -114,8 +119,8 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
-            'user' => auth()->user()
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'user' => auth('api')->user()
         ]);
     }
 
