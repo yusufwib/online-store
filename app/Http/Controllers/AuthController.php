@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Validator;
-
+use App\Helper\ResponseHelper as JsonHelper;
 
 class AuthController extends Controller
 {
@@ -25,20 +25,21 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function login(Request $request){
+        $res = new JsonHelper;
     	$validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return $res->responseGet(false, 400, '', $validator->errors());
         }
 
         if (! $token = auth()->attempt($validator->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return $res->responseGet(false, 401, '', 'Unatorizhed');
         }
 
-        return $this->createNewToken($token);
+        return $res->responseGet(true, 200, $this->createNewToken($token), '');
     }
 
     /**
@@ -47,6 +48,8 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function register(Request $request) {
+        $res = new JsonHelper;
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:2,100',
             'email' => 'required|string|email|max:100|unique:users',
@@ -54,7 +57,7 @@ class AuthController extends Controller
         ]);
 
         if($validator->fails()){
-            return response()->json($validator->errors()->toJson(), 400);
+            return $res->responseGet(false, 400, '', $validator->errors());
         }
 
         $user = User::create(array_merge(
@@ -62,10 +65,7 @@ class AuthController extends Controller
                     ['password' => bcrypt($request->password)]
                 ));
 
-        return response()->json([
-            'message' => 'User successfully registered',
-            'user' => $user
-        ], 201);
+        return $res->responsePost(true, 201, $user, '');
     }
 
 
@@ -75,9 +75,10 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout() {
-        auth()->logout();
+        $res = new JsonHelper;
 
-        return response()->json(['message' => 'User successfully signed out']);
+        auth()->logout();
+        return $res->responseGet(true, 200, '', 'User successfully signed out');
     }
 
     /**
@@ -86,7 +87,9 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function refresh() {
-        return $this->createNewToken(auth()->refresh());
+        $res = new JsonHelper;
+
+        return $res->responseGet(true, 200, $this->createNewToken(auth()->refresh()), '');
     }
 
     /**
@@ -95,7 +98,9 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function userProfile() {
-        return response()->json(auth()->user());
+        $res = new JsonHelper;
+
+        return $res->responseGet(true, 200, auth()->user(), '');
     }
 
     /**
