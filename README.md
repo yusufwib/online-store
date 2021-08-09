@@ -18,6 +18,10 @@ Menurut saya ada beberapa solusi untuk menangani case tersebut:
 3. kalau di golang bisa memanfaatkan go-routine untuk request yang besar
 
 
+## Treasure Hunt Endpoint
+
+http://evermos-test.gantangansultan.com/public/api/v1/treasure-hunt
+
 # How to install
 
 requirements:
